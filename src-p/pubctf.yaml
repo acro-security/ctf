@@ -1,0 +1,23 @@
+- name: Pointer Overflow CTF
+  abbreviation: POCTF
+  edition: 2026
+  website: https://pointeroverflowctf.com/
+  rules: https://pointeroverflowctf.com/rules.html
+  organizer: University of Wisconsin–Stevens Point
+  location: online
+  start: '2026-09-27T09:00:00-05:00'
+  end: '2026-12-06T16:00:00-06:00'
+  format:
+    - jeopardy
+    - narrative tracks
+  brackets:
+    - solo
+    - team
+    - academic
+  team_size:
+    standard_min: 1
+    standard_max: 6
+    academic: uncapped, subject to eligibility verification
+  challenge_release: Weekly waves from September 27 through November 15, 2026.
+  scoring: Challenge values freeze between 50 and 500 points; first blood earns a 10% bonus.
+  flags: Team-specific; some challenge content also varies by team.
