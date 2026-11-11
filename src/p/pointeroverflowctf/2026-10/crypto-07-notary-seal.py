@@ -7,7 +7,7 @@ Recover the document by taking its integer cube root.
 Run from the repository dev shell:
 
     nix develop
-    uv run src/p/pointeroverflowctf/2026-10/crypto-04-notary-seal.py
+    uv run src/p/pointeroverflowctf/2026-10/crypto-07-notary-seal.py
 """
 
 from __future__ import annotations

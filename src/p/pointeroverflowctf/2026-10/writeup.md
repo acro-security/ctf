@@ -10,7 +10,7 @@ the Lisp solvers and uv for Python:
 nix develop
 ```
 
-The Lisp solvers run with `sbcl --script <file>`, and the Python solver runs
+The Lisp solvers run with `sbcl --script <file>`, and the Python solvers run
 with `uv run <file>`.
 
 ## 1. Letters Never Sent
@@ -361,6 +361,85 @@ notary did neither.
 POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}
 ```
 
+## 8. Forty Measures Deep
+
+**Solver:** `crypto-08-forty-measures-deep.py`
+**Attachment:** `attachments/score.mid`
+
+### The file
+
+`score.mid` is a type-0 Standard MIDI File with one monophonic track. It
+contains 58 note-on events, each holding for a quarter note at 480 PPQ. The
+track name is "Forty Measures Deep".
+
+We do not need to perform the score; we need its pitch numbers. Parse the
+track and collect every note-on event.
+
+### The musical alphabet
+
+The known plaintext `POCTF` maps the first five notes as follows:
+
+| Note | Character |
+|------|-----------|
+| 80 | `P` |
+| 79 | `O` |
+| 67 | `C` |
+| 84 | `T` |
+| 70 | `F` |
+
+Those are exactly the ASCII codes of the letters, but the rest of the notes
+are not simply ASCII: the sixth note is 64, where the flag format requires
+`{`, and the following notes are 60, 57, and so on. The flag format provides
+the rest of the crib:
+
+```
+POCTF{XX.XXXX.<random>}
+```
+
+Combining the crib with the observed notes reveals a consecutive mapping:
+
+| Note | 53 | 54 | ... | 62 | 63 | 64 | 65 | ... | 90 | 91 |
+|------|----|----|-----|----|----|----|----|-----|----|----|
+| Char | `0` | `1` | ... | `9` | `.` | `{` | `A` | ... | `Z` | `}` |
+
+The private alphabet is therefore
+
+```
+0123456789.{ABCDEFGHIJKLMNOPQRSTUVWXYZ}
+```
+
+and a note decodes with `note - 53`. In musical terms, the 39-symbol alphabet
+is laid out as a chromatic scale starting at MIDI note 53 (F3). The letters
+happen to retain their ASCII values.
+
+### Decoding
+
+Once the base note is known, decoding is a table lookup:
+
+```python
+ALPHABET = "0123456789.{ABCDEFGHIJKLMNOPQRSTUVWXYZ}"
+
+def decode(notes):
+    return "".join(ALPHABET[note - 53] for note in notes)
+```
+
+The solver parses the Standard MIDI File directly with the Python standard
+library, handling variable-length quantities, meta events, note-on/note-off
+events, and running status. No extra dependency is needed.
+
+```console
+nix develop
+uv run src/p/pointeroverflowctf/2026-10/crypto-08-forty-measures-deep.py
+notes: 58
+flag:  POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
+```
+
+### Flag
+
+```
+POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
+```
+
 ## Summary
 
 | # | Challenge | Technique | Flag |
@@ -368,4 +447,5 @@ POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}
 | 1 | Letters Never Sent | Beaufort cipher, compass-rose key | `POCTF{2.1619.DDSVGT4WDHZ47VOL.KUJZW6I6WLD4AARQIBLXTGJ7HZ}` |
 | 2 | Apparatus | Game-tree key recovery, printable-ASCII Vigenère | `POCTF{5.1619.BFNVVDUWGGVY4XRL.GBCZ7XM63RBP6YCC52GYYRHEXZ}` |
 | 3 | The Consulting Room | CBC padding oracle over multiplexed HTTP/2 | `POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}` |
-| 4 | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
+| 7 | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
+| 8 | Forty Measures Deep | MIDI note cipher, musical alphabet | `POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}` |
