@@ -41,6 +41,14 @@ challenges:
     path: crypto-08-forty-measures-deep.py
     writeup: writeup.md#8-forty-measures-deep
 
+  - id: crypto-04
+    title: A Map of Small Things
+    category: crypto
+    tags: [crypto, elliptic-curve, ecdlp, supersingular, smooth-order, pohlig-hellman, bsgs]
+    summary: Supersingular curve with smooth order; Pohlig-Hellman recovers the ECDLP.
+    path: crypto-04-map-of-small-things.py
+    writeup: writeup.md#4-a-map-of-small-things
+
   - id: exploit3
     title: The Sandglass
     category: exploit

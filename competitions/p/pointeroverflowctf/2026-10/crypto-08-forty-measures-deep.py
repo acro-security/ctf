@@ -11,7 +11,7 @@ base of the mapping.
 Run from the repository dev shell:
 
     nix develop
-    uv run src/p/pointeroverflowctf/2026-10/crypto-08-forty-measures-deep.py
+    uv run competitions/p/pointeroverflowctf/2026-10/crypto-08-forty-measures-deep.py
 """
 
 from __future__ import annotations

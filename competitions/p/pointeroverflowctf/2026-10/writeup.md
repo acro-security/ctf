@@ -251,9 +251,75 @@ Stripping the PKCS#7 padding leaves the flag.
 POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}
 ```
 
+## 4. A Map of Small Things
+
+**Solver:** `crypto-04-map-of-small-things.py`
+
+**Category:** crypto
+
+**Tags:** elliptic-curve, ECDLP, supersingular, smooth-order,
+Pohlig-Hellman, baby-step giant-step
+
+### The curve
+
+The challenge gives
+
+```text
+y^2 = x^3 + x  over F_p
+p = 17759930830448937043
+G = (2, 2130375071143573863)
+Q = (3021250187620952397, 10766220228950080733)
+```
+
+Since `p = 3 (mod 4)`, this curve is supersingular and its group order is
+
+```text
+#E(F_p) = p + 1 = 17759930830448937044
+        = 2^2 * 38603 * 121123 * 949584469
+```
+
+All prime factors are small. The largest is below `2^30`, so the
+elliptic-curve discrete logarithm can be solved with Pohlig-Hellman rather
+than a generic attack on the full 64-bit group.
+
+### Recovering the private key
+
+For each prime power `q^e` dividing the group order, project the generator
+and public key into the `q^e`-torsion subgroup:
+
+```text
+G_q = (n / q^e) * G
+Q_q = (n / q^e) * Q
+```
+
+Then solve `Q_q = x_q * G_q` with baby-step giant-step. The residues are:
+
+| `q^e` | `k mod q^e` |
+|-------|-------------|
+| 4 | 1 |
+| 38603 | 8518 |
+| 121123 | 49613 |
+| 949584469 | 555889720 |
+
+Combining them with the Chinese remainder theorem gives
+
+```text
+k = 7402776758243033309
+```
+
+The solver verifies the result by checking `k * G == Q`.
+
+### Flag
+
+```text
+POCTF{7402776758243033309}
+```
+
+The raw decimal integer `7402776758243033309` is also accepted.
+
 ## 7. The Notary's Seal
 
-**Solver:** `crypto-04-notary-seal.py`
+**Solver:** `crypto-07-notary-seal.py`
 
 ### The setup
 
@@ -329,7 +395,7 @@ The solver is a plain Python script run through uv from the Nix dev shell:
 
 ```console
 nix develop
-uv run src/p/pointeroverflowctf/2026-10/crypto-04-notary-seal.py
+uv run competitions/p/pointeroverflowctf/2026-10/crypto-07-notary-seal.py
 n    = 2048 bits
 seal = 1387 bits
 e    = 3
@@ -429,7 +495,7 @@ events, and running status. No extra dependency is needed.
 
 ```console
 nix develop
-uv run src/p/pointeroverflowctf/2026-10/crypto-08-forty-measures-deep.py
+uv run competitions/p/pointeroverflowctf/2026-10/crypto-08-forty-measures-deep.py
 notes: 58
 flag:  POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
 ```
@@ -585,6 +651,7 @@ raw `io` table.
 | 1 | Letters Never Sent | Beaufort cipher, compass-rose key | `POCTF{2.1619.DDSVGT4WDHZ47VOL.KUJZW6I6WLD4AARQIBLXTGJ7HZ}` |
 | 2 | Apparatus | Game-tree key recovery, printable-ASCII Vigenère | `POCTF{5.1619.BFNVVDUWGGVY4XRL.GBCZ7XM63RBP6YCC52GYYRHEXZ}` |
 | 3 | The Consulting Room | CBC padding oracle over multiplexed HTTP/2 | `POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}` |
+| 4 | A Map of Small Things | Supersingular curve, smooth order, Pohlig-Hellman | `POCTF{7402776758243033309}` |
 | 7 | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
 | 8 | Forty Measures Deep | MIDI note cipher, musical alphabet | `POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}` |
 | exploit3 | The Sandglass | Lua sandbox escape, arbitrary file read via `io.open` | `POCTF{128.1619.687dd42ffb219159.H4NH7DMPZGZUPGEWF3UQSSIWCJ}` |
