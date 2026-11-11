@@ -1,7 +1,17 @@
 # Pointer Overflow CTF 2026
 
-Writeups for the three crypto challenges released in the October wave. The
-solver for each challenge lives in the same directory as this file.
+Writeups for the crypto challenges in this directory. The solver for each
+challenge lives alongside this file.
+
+All solvers run from the repository's Nix dev shell, which provides SBCL for
+the Lisp solvers and uv for Python:
+
+```console
+nix develop
+```
+
+The Lisp solvers run with `sbcl --script <file>`, and the Python solver runs
+with `uv run <file>`.
 
 ## 1. Letters Never Sent
 
@@ -241,6 +251,116 @@ Stripping the PKCS#7 padding leaves the flag.
 POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}
 ```
 
+## 7. The Notary's Seal
+
+**Solver:** `crypto-04-notary-seal.py`
+
+### The setup
+
+A document is treated as an integer $m$ and sealed with the notary's RSA
+public key $(n, e)$:
+
+$$
+s \equiv m^e \pmod n
+$$
+
+We are given a 2048-bit modulus $n$, the public exponent $e = 3$, and the
+seal $s$. The goal is to recover the document and submit it verbatim.
+
+The important sentence is "the notary is not a careful notary": this is
+**textbook RSA** with no padding, applied to a short message.
+
+### What kind of problem this is
+
+This is not a factoring challenge, and we never need the private exponent
+$d$. It is a **low public exponent attack**, specifically the case where the
+message is so short that the modular reduction never happens.
+
+Compare the sizes:
+
+| Value | Size |
+|-------|------|
+| $n$ | 2048 bits |
+| $s$ | 1387 bits |
+
+Since $s < n$ and $e = 3$, the seal cannot be a wrapped residue. It must be
+the plain integer cube of the document:
+
+$$
+s = m^3
+$$
+
+So the document is just the integer cube root:
+
+$$
+m = \sqrt[3]{s}
+$$
+
+This is also visible from the bit lengths: $1387 \approx 3 \times 463$, so the
+document is a 463-bit integer, far below the 2048-bit modulus.
+
+### Recovering the document
+
+An integer cube root is computed with binary search (or Newton's method),
+followed by an exact check:
+
+```python
+def iroot(value: int, degree: int) -> int:
+    """Return floor(value ** (1 / degree))."""
+    low = 1
+    high = 1 << (value.bit_length() // degree + 1)
+    while low < high:
+        mid = (low + high + 1) // 2
+        if mid**degree <= value:
+            low = mid
+        else:
+            high = mid - 1
+    return low
+
+
+m = iroot(SEAL, 3)
+assert pow(m, 3) == SEAL
+
+document = m.to_bytes((m.bit_length() + 7) // 8, "big")
+print(document.decode())
+```
+
+The solver is a plain Python script run through uv from the Nix dev shell:
+
+```console
+nix develop
+uv run src/p/pointeroverflowctf/2026-10/crypto-04-notary-seal.py
+n    = 2048 bits
+seal = 1387 bits
+e    = 3
+m    = 463 bits
+doc  = POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}
+```
+
+The exact equality `m ** 3 == SEAL` confirms that no modular reduction took
+place and that the recovered integer is the original document.
+
+### Why the attack stops working otherwise
+
+If the seal had been at least $n$, the cube root of the residue would not be
+the message. Two related attacks then apply:
+
+- **Coppersmith's small-root attack** when $m < n^{1/e}$: find small roots of
+  $x^e - s \equiv 0 \pmod n$ with lattice reduction.
+- **Håstad's broadcast attack** when the same unpadded message is sent to at
+  least $e$ recipients with different moduli: combine the residues with CRT
+  to recover $m^e$ over the integers, then take the $e$-th root.
+
+Real RSA avoids all of this by using randomized padding (OAEP or PKCS#1
+v1.5), which makes the encoded message large and unpredictable. The careless
+notary did neither.
+
+### Flag
+
+```
+POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}
+```
+
 ## Summary
 
 | # | Challenge | Technique | Flag |
@@ -248,3 +368,4 @@ POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}
 | 1 | Letters Never Sent | Beaufort cipher, compass-rose key | `POCTF{2.1619.DDSVGT4WDHZ47VOL.KUJZW6I6WLD4AARQIBLXTGJ7HZ}` |
 | 2 | Apparatus | Game-tree key recovery, printable-ASCII Vigenère | `POCTF{5.1619.BFNVVDUWGGVY4XRL.GBCZ7XM63RBP6YCC52GYYRHEXZ}` |
 | 3 | The Consulting Room | CBC padding oracle over multiplexed HTTP/2 | `POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}` |
+| 4 | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
