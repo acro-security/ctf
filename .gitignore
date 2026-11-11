@@ -3,3 +3,11 @@
 **/.env
 *.state
 **/*.state
+
+# WireGuard configs contain private keys; never commit them.
+**/ctfy-*.conf
+**/*.wg.conf
+
+# Python caches.
+__pycache__/
+*.pyc

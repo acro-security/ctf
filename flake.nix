@@ -1,5 +1,5 @@
 {
-  description = "Pointer Overflow CTF 2026 writeups and solver environment";
+  description = "ctf environments";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -21,10 +21,17 @@
             packages = with pkgs; [
               curl
               just
+              lua5_4
               python3
               sbcl
               uv
+              wireguard-tools
               xxd
+            ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+              iproute2
+              iptables
+              openresolv
+              procps
             ];
 
             UV_PYTHON = "${pkgs.python3}/bin/python3";
@@ -33,6 +40,7 @@
 
             shellHook = ''
               echo "CTF development environment"
+              echo "  lua:    $(lua -v 2>&1)"
               echo "  sbcl:   $(sbcl --version)"
               echo "  uv:     $(uv --version)"
               echo "  python: $(python3 --version)"
