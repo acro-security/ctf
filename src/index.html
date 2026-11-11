@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CTF Challenge Search</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1c2024;
+      --muted: #667085;
+      --border: #d8dde3;
+      --accent: #2f6feb;
+      --accent-soft: #e8f0ff;
+      --chip: #eef1f5;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --panel: #171a21;
+        --text: #e6e8ec;
+        --muted: #9aa4b2;
+        --border: #2a2f3a;
+        --accent: #7aa2ff;
+        --accent-soft: #1b2a4a;
+        --chip: #222733;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: -.02em;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 24px 64px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 170px 150px;
+      gap: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 14px 0 4px;
+    }
+
+    .tag {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--chip);
+      color: var(--text);
+      font: inherit;
+      font-size: .85rem;
+      cursor: pointer;
+    }
+
+    .tag[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .tag .count {
+      margin-left: 4px;
+      opacity: .65;
+      font-size: .78em;
+    }
+
+    .status {
+      margin: 16px 0;
+      color: var(--muted);
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.08rem;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: .75rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .meta {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .summary {
+      margin: 10px 0;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .card-tags span {
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--chip);
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin: 0;
+      font-size: .88rem;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .links a:hover { text-decoration: underline; }
+
+    .links code {
+      color: var(--muted);
+      font-size: .8rem;
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      padding: 32px 0;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .controls { grid-template-columns: 1fr; }
+      header, main { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CTF Challenge Search</h1>
+    <p class="subtitle">Local index of this repository. Filter by category, tag, or free text.</p>
+  </header>
+
+  <main>
+    <section class="controls" aria-label="Filters">
+      <input id="q" type="search" placeholder="Search title, tag, path, summary..." autocomplete="off">
+      <select id="category" aria-label="Category">
+        <option value="">All categories</option>
+      </select>
+      <select id="mode" aria-label="Tag matching">
+        <option value="all">Match all tags</option>
+        <option value="any">Match any tag</option>
+      </select>
+    </section>
+
+    <section id="tags" class="tags" aria-label="Tags"></section>
+    <p id="status" class="status">Loading...</p>
+    <section id="results" class="results" aria-live="polite"></section>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

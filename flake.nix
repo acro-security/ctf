@@ -19,6 +19,7 @@
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [
+              bun
               curl
               just
               lua5_4
@@ -40,6 +41,7 @@
 
             shellHook = ''
               echo "CTF development environment"
+              echo "  bun:    $(bun --version)"
               echo "  lua:    $(lua -v 2>&1)"
               echo "  sbcl:   $(sbcl --version)"
               echo "  uv:     $(uv --version)"

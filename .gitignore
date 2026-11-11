@@ -11,3 +11,8 @@
 # Python caches.
 __pycache__/
 *.pyc
+
+# Bun / TypeScript build output.
+node_modules/
+dist/
+*.tsbuildinfo

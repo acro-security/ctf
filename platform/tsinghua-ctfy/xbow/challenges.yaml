@@ -1,0 +1,9 @@
+event: Tsinghua CTFy (xbow)
+challenges:
+  - id: trading-platform
+    title: Trading Platform — Order Receipts
+    category: web
+    tags: [web, idor, authorization, flask, http]
+    summary: Missing object-level authorization on order receipts.
+    path: trading-platform.py
+    writeup: writeup.md

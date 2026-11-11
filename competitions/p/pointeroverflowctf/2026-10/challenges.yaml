@@ -1,0 +1,50 @@
+event: Pointer Overflow CTF 2026
+date: "2026-10"
+challenges:
+  - id: crypto-01
+    title: Letters Never Sent
+    category: crypto
+    tags: [crypto, classical, beaufort, substitution]
+    summary: Beaufort cipher keyed by a compass-rose acrostic.
+    path: crypto-01-letters-never-sent.lisp
+    writeup: writeup.md#1-letters-never-sent
+
+  - id: crypto-02
+    title: Apparatus
+    category: crypto
+    tags: [crypto, vigenere, game-tree, search, printable-ascii]
+    summary: Recover a Vigenere key from the move order of a tic-tac-toe game.
+    path: crypto-02-apparatus.lisp
+    writeup: writeup.md#2-apparatus
+
+  - id: crypto-03
+    title: The Consulting Room
+    category: crypto
+    tags: [crypto, aes, cbc, padding-oracle, http2]
+    summary: CBC padding oracle over a multiplexed HTTP/2 endpoint.
+    path: crypto-03-consulting-room.sh
+    writeup: writeup.md#3-the-consulting-room
+
+  - id: crypto-07
+    title: The Notary's Seal
+    category: crypto
+    tags: [crypto, rsa, low-exponent, cube-root]
+    summary: Textbook RSA with a small exponent and an integer cube root.
+    path: crypto-07-notary-seal.py
+    writeup: writeup.md#7-the-notarys-seal
+
+  - id: crypto-08
+    title: Forty Measures Deep
+    category: crypto
+    tags: [crypto, midi, musical-cipher, substitution]
+    summary: MIDI notes mapped onto a 39-symbol private alphabet.
+    path: crypto-08-forty-measures-deep.py
+    writeup: writeup.md#8-forty-measures-deep
+
+  - id: exploit3
+    title: The Sandglass
+    category: exploit
+    tags: [exploit, lua, sandbox-escape, file-read]
+    summary: SafeLua copies the whole io library, leaving io.open reachable.
+    path: exploit-03-the-sandglass.lua
+    writeup: writeup.md#exploit3-the-sandglass

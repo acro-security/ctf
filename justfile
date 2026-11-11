@@ -17,3 +17,19 @@ wg-down conf:
 wg-show:
     sudo "$(command -v wg)" show
 
+# Install the local challenge search dependencies.
+install:
+    bun install
+
+# Run the local challenge search frontend.
+search:
+    bun run start
+
+# Run the local challenge search frontend with file watching.
+search-dev:
+    bun run dev
+
+# Type-check the challenge search frontend and backend.
+check:
+    bun run typecheck
+
