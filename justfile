@@ -33,3 +33,11 @@ search-dev:
 check:
     bun run typecheck
 
+# Build the static site for GitHub Pages.
+build:
+    bun run build
+
+# Preview the static build locally.
+preview:
+    python3 -m http.server 8000 --directory dist
+

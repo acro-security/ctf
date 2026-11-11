@@ -63,7 +63,7 @@ const server = Bun.serve({
       });
     }
 
-    if (url.pathname === "/api/challenges") {
+    if (url.pathname === "/api/challenges" || url.pathname === "/challenges.json") {
       return new Response(payloadJson, {
         headers: {
           "Content-Type": "application/json; charset=utf-8",

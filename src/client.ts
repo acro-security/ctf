@@ -175,7 +175,7 @@ async function init(): Promise<void> {
   bind();
 
   try {
-    const response = await fetch("/api/challenges", { cache: "no-store" });
+    const response = await fetch("./challenges.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = (await response.json()) as IndexPayload;

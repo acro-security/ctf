@@ -150,8 +150,19 @@ export async function createRenderer(): Promise<Renderer> {
   };
 }
 
-export function renderPage(title: string, relativePath: string, body: string): string {
-  const rawUrl = `/file?path=${encodeURIComponent(relativePath)}`;
+export interface PageLinks {
+  homeHref?: string;
+  rawHref?: string;
+}
+
+export function renderPage(
+  title: string,
+  relativePath: string,
+  body: string,
+  links: PageLinks = {},
+): string {
+  const homeHref = links.homeHref ?? "/";
+  const rawHref = links.rawHref ?? `/file?path=${encodeURIComponent(relativePath)}`;
 
   return `<!doctype html>
 <html lang="en">
@@ -306,8 +317,8 @@ export function renderPage(title: string, relativePath: string, body: string): s
     <div class="top">
       <h1>${escapeHtml(title)}</h1>
       <nav class="nav">
-        <a href="/">← search</a>
-        <a href="${escapeHtml(rawUrl)}" target="_blank" rel="noreferrer">raw</a>
+        <a href="${escapeHtml(homeHref)}">← search</a>
+        <a href="${escapeHtml(rawHref)}" target="_blank" rel="noreferrer">raw</a>
       </nav>
     </div>
     <p class="path">${escapeHtml(relativePath)}</p>
