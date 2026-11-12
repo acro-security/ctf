@@ -7,7 +7,7 @@ challenges:
     tags: [crypto, classical, beaufort, substitution]
     summary: Beaufort cipher keyed by a compass-rose acrostic.
     path: crypto-01-letters-never-sent.lisp
-    writeup: writeup.md#1-letters-never-sent
+    writeup: writeup.md#crypto-01-letters-never-sent
 
   - id: crypto-02
     title: Apparatus
@@ -15,7 +15,7 @@ challenges:
     tags: [crypto, vigenere, game-tree, search, printable-ascii]
     summary: Recover a Vigenere key from the move order of a tic-tac-toe game.
     path: crypto-02-apparatus.lisp
-    writeup: writeup.md#2-apparatus
+    writeup: writeup.md#crypto-02-apparatus
 
   - id: crypto-03
     title: The Consulting Room
@@ -23,23 +23,7 @@ challenges:
     tags: [crypto, aes, cbc, padding-oracle, http2]
     summary: CBC padding oracle over a multiplexed HTTP/2 endpoint.
     path: crypto-03-consulting-room.sh
-    writeup: writeup.md#3-the-consulting-room
-
-  - id: crypto-07
-    title: The Notary's Seal
-    category: crypto
-    tags: [crypto, rsa, low-exponent, cube-root]
-    summary: Textbook RSA with a small exponent and an integer cube root.
-    path: crypto-07-notary-seal.py
-    writeup: writeup.md#7-the-notarys-seal
-
-  - id: crypto-08
-    title: Forty Measures Deep
-    category: crypto
-    tags: [crypto, midi, musical-cipher, substitution]
-    summary: MIDI notes mapped onto a 39-symbol private alphabet.
-    path: crypto-08-forty-measures-deep.py
-    writeup: writeup.md#8-forty-measures-deep
+    writeup: writeup.md#crypto-03-the-consulting-room
 
   - id: crypto-04
     title: A Map of Small Things
@@ -47,12 +31,36 @@ challenges:
     tags: [crypto, elliptic-curve, ecdlp, supersingular, smooth-order, pohlig-hellman, bsgs]
     summary: Supersingular curve with smooth order; Pohlig-Hellman recovers the ECDLP.
     path: crypto-04-map-of-small-things.py
-    writeup: writeup.md#4-a-map-of-small-things
+    writeup: writeup.md#crypto-04-a-map-of-small-things
 
-  - id: exploit3
+  - id: crypto-07
+    title: The Notary's Seal
+    category: crypto
+    tags: [crypto, rsa, low-exponent, cube-root]
+    summary: Textbook RSA with a small exponent and an integer cube root.
+    path: crypto-07-notary-seal.py
+    writeup: writeup.md#crypto-07-the-notarys-seal
+
+  - id: crypto-08
+    title: Forty Measures Deep
+    category: crypto
+    tags: [crypto, midi, musical-cipher, substitution]
+    summary: MIDI notes mapped onto a 39-symbol private alphabet.
+    path: crypto-08-forty-measures-deep.py
+    writeup: writeup.md#crypto-08-forty-measures-deep
+
+  - id: exploit-03
     title: The Sandglass
     category: exploit
     tags: [exploit, lua, sandbox-escape, file-read]
     summary: SafeLua copies the whole io library, leaving io.open reachable.
     path: exploit-03-the-sandglass.lua
-    writeup: writeup.md#exploit3-the-sandglass
+    writeup: writeup.md#exploit-03-the-sandglass
+
+  - id: exploit-05
+    title: What the Heap Remembers
+    category: exploit
+    tags: [exploit, heap, allocator, key-leak, xor, murmur-hash, LCG]
+    summary: An unchecked slab read handle leaks the in-memory XOR key.
+    path: exploit-05-what-the-heap-remembers.py
+    writeup: writeup.md#exploit-05-what-the-heap-remembers
