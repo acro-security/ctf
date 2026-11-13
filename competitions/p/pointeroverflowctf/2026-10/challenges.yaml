@@ -49,6 +49,14 @@ challenges:
     path: crypto-08-forty-measures-deep.py
     writeup: writeup.md#crypto-08-forty-measures-deep
 
+  - id: exploit-01
+    title: Read Me My Fortune
+    category: exploit
+    tags: [exploit, python, format-string, sandbox-escape]
+    summary: Player-controlled str.format walks a function's __globals__ to the flag.
+    path: exploit-01-read-my-fortune.py
+    writeup: writeup.md#exploit-01-read-me-my-fortune
+
   - id: exploit-03
     title: The Sandglass
     category: exploit
