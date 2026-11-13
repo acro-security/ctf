@@ -87,6 +87,55 @@ export interface Renderer {
   languageForPath(file: string): string;
 }
 
+/**
+ * GitHub-compatible heading slug: lowercase, drop punctuation, spaces to
+ * hyphens. Duplicates get a -1, -2, ... suffix like github-slugger does.
+ */
+function slugifyHeading(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s_-]/gu, "")
+    .replace(/\s+/g, "-");
+}
+
+function collectText(node: any): string {
+  if (!node) return "";
+  if (node.type === "text") return node.value ?? "";
+  if (!Array.isArray(node.children)) return "";
+  return node.children.map(collectText).join("");
+}
+
+/** Add `id` attributes to headings so `#anchor` links work. */
+function rehypeHeadingIds() {
+  return (tree: any) => {
+    const seen = new Map<string, number>();
+
+    const visit = (node: any) => {
+      if (!node) return;
+      if (
+        node.type === "element" &&
+        typeof node.tagName === "string" &&
+        /^h[1-6]$/.test(node.tagName)
+      ) {
+        const base = slugifyHeading(collectText(node));
+        if (base) {
+          const count = seen.get(base) ?? 0;
+          seen.set(base, count + 1);
+          const id = count === 0 ? base : `${base}-${count}`;
+          node.properties = node.properties ?? {};
+          if (!node.properties.id) node.properties.id = id;
+        }
+      }
+      if (Array.isArray(node.children)) {
+        for (const child of node.children) visit(child);
+      }
+    };
+
+    visit(tree);
+  };
+}
+
 const HTML_ESCAPES: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -124,6 +173,7 @@ export async function createRenderer(): Promise<Renderer> {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype)
+    .use(rehypeHeadingIds)
     .use(rehypeMathjax, {
       svg: {
         fontCache: "local",

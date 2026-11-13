@@ -126,7 +126,10 @@ function renderResults(): void {
       links.push(`<a href="${escapeHtml(challenge.pathUrl)}" target="_blank" rel="noreferrer">solver / poc</a>`);
     }
     if (challenge.writeupUrl) {
-      links.push(`<a href="${escapeHtml(challenge.writeupUrl)}" target="_blank" rel="noreferrer">writeup</a>`);
+      const hash = challenge.writeup?.indexOf("#") ?? -1;
+      const anchor = hash === -1 ? "" : challenge.writeup!.slice(hash + 1);
+      const href = anchor ? `${challenge.writeupUrl}#${anchor}` : challenge.writeupUrl;
+      links.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer">writeup</a>`);
     }
 
     const meta = [challenge.event, challenge.date].filter(Boolean).join(" · ");
