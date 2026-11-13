@@ -7,3 +7,4 @@ challenges:
     summary: Missing object-level authorization on order receipts.
     path: trading-platform.py
     writeup: writeup.md
+    difficulty: easy

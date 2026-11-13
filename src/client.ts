@@ -5,6 +5,7 @@ type TagMode = "all" | "any";
 interface State {
   q: string;
   category: string;
+  difficulty: string;
   tags: Set<string>;
   mode: TagMode;
 }
@@ -12,12 +13,13 @@ interface State {
 const state: State = {
   q: "",
   category: "",
+  difficulty: "",
   tags: new Set<string>(),
   mode: "all",
 };
 
 let all: Challenge[] = [];
-let facets: Facets = { categories: [], tags: [] };
+let facets: Facets = { categories: [], tags: [], difficulties: [] };
 
 function byId<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -68,6 +70,14 @@ function renderControls(): void {
       ${escapeHtml(tag)}<span class="count">${count}</span>
     </button>
   `).join("");
+
+  const difficultySelect = byId<HTMLSelectElement>("difficulty");
+  for (const value of facets.difficulties) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    difficultySelect.appendChild(option);
+  }
 }
 
 function matches(challenge: Challenge): boolean {
@@ -78,6 +88,7 @@ function matches(challenge: Challenge): boolean {
     challenge.date,
     challenge.category,
     challenge.summary,
+    challenge.difficulty,
     ...challenge.tags,
     challenge.path,
     challenge.writeup,
@@ -85,6 +96,7 @@ function matches(challenge: Challenge): boolean {
 
   if (state.q && !haystack.includes(state.q)) return false;
   if (state.category && challenge.category !== state.category) return false;
+  if (state.difficulty && challenge.difficulty !== state.difficulty) return false;
 
   if (state.tags.size) {
     const tags = new Set(challenge.tags);
@@ -121,12 +133,16 @@ function renderResults(): void {
     const tags = challenge.tags
       .map((tag) => `<span>${escapeHtml(tag)}</span>`)
       .join("");
+    const difficulty = challenge.difficulty
+      ? `<span class="difficulty" data-level="${escapeHtml(challenge.difficulty)}">${escapeHtml(challenge.difficulty)}</span>`
+      : "";
 
     return `
       <article class="card">
         <div class="card-head">
           <h2>${escapeHtml(challenge.title)}</h2>
-          <span class="badge">${escapeHtml(challenge.category)}</span>
+          ${difficulty}
+          <span class="badge" data-category="${escapeHtml(challenge.category)}">${escapeHtml(challenge.category)}</span>
         </div>
         ${meta ? `<p class="meta">${escapeHtml(meta)}</p>` : ""}
         ${challenge.summary ? `<p class="summary">${escapeHtml(challenge.summary)}</p>` : ""}
@@ -145,6 +161,11 @@ function bind(): void {
 
   byId<HTMLSelectElement>("category").addEventListener("change", (event) => {
     state.category = (event.target as HTMLSelectElement).value;
+    renderResults();
+  });
+
+  byId<HTMLSelectElement>("difficulty").addEventListener("change", (event) => {
+    state.difficulty = (event.target as HTMLSelectElement).value;
     renderResults();
   });
 

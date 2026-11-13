@@ -8,6 +8,7 @@ challenges:
     summary: Beaufort cipher keyed by a compass-rose acrostic.
     path: crypto-01-letters-never-sent.lisp
     writeup: writeup.md#crypto-01-letters-never-sent
+    difficulty: easy
 
   - id: crypto-02
     title: Apparatus
@@ -16,6 +17,7 @@ challenges:
     summary: Recover a Vigenere key from the move order of a tic-tac-toe game.
     path: crypto-02-apparatus.lisp
     writeup: writeup.md#crypto-02-apparatus
+    difficulty: easy
 
   - id: crypto-03
     title: The Consulting Room
@@ -24,6 +26,7 @@ challenges:
     summary: CBC padding oracle over a multiplexed HTTP/2 endpoint.
     path: crypto-03-consulting-room.sh
     writeup: writeup.md#crypto-03-the-consulting-room
+    difficulty: moderate
 
   - id: crypto-04
     title: A Map of Small Things
@@ -32,6 +35,7 @@ challenges:
     summary: Supersingular curve with smooth order; Pohlig-Hellman recovers the ECDLP.
     path: crypto-04-map-of-small-things.py
     writeup: writeup.md#crypto-04-a-map-of-small-things
+    difficulty: moderate
 
   - id: crypto-07
     title: The Notary's Seal
@@ -40,6 +44,7 @@ challenges:
     summary: Textbook RSA with a small exponent and an integer cube root.
     path: crypto-07-notary-seal.py
     writeup: writeup.md#crypto-07-the-notarys-seal
+    difficulty: trivial
 
   - id: crypto-08
     title: Forty Measures Deep
@@ -48,6 +53,7 @@ challenges:
     summary: MIDI notes mapped onto a 39-symbol private alphabet.
     path: crypto-08-forty-measures-deep.py
     writeup: writeup.md#crypto-08-forty-measures-deep
+    difficulty: easy
 
   - id: exploit-01
     title: Read Me My Fortune
@@ -56,6 +62,7 @@ challenges:
     summary: Player-controlled str.format walks a function's __globals__ to the flag.
     path: exploit-01-read-my-fortune.py
     writeup: writeup.md#exploit-01-read-me-my-fortune
+    difficulty: trivial
 
   - id: exploit-02
     title: Thirty-Two Steps Down
@@ -64,6 +71,7 @@ challenges:
     summary: The CALL ceiling and READ_HOST_FLAG check disagree by one level.
     path: exploit-02-thirty-two-steps-down.py
     writeup: writeup.md#exploit-02-thirty-two-steps-down
+    difficulty: easy
 
   - id: exploit-03
     title: The Sandglass
@@ -72,6 +80,7 @@ challenges:
     summary: SafeLua copies the whole io library, leaving io.open reachable.
     path: exploit-03-the-sandglass.lua
     writeup: writeup.md#exploit-03-the-sandglass
+    difficulty: easy
 
   - id: exploit-05
     title: What the Heap Remembers
@@ -80,3 +89,4 @@ challenges:
     summary: An unchecked slab read handle leaks the in-memory XOR key.
     path: exploit-05-what-the-heap-remembers.py
     writeup: writeup.md#exploit-05-what-the-heap-remembers
+    difficulty: moderate

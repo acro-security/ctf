@@ -66,7 +66,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) 170px 150px;
+      grid-template-columns: minmax(200px, 1fr) 150px 150px 150px;
       gap: 10px;
     }
 
@@ -148,11 +148,219 @@
     .badge {
       border-radius: 999px;
       padding: 2px 8px;
-      background: var(--accent-soft);
-      color: var(--accent);
+      border: 1px solid transparent;
+      background: var(--chip);
+      color: var(--muted);
       font-size: .75rem;
       letter-spacing: .04em;
       text-transform: uppercase;
+    }
+
+    /* Category colours. Unknown categories fall back to the neutral chip. */
+
+    .badge[data-category="crypto"] {
+      background: #efe7ff;
+      color: #6b3fc4;
+      border-color: #d8c7fb;
+    }
+
+    .badge[data-category="exploit"] {
+      background: #ffe8ea;
+      color: #b42318;
+      border-color: #f8c4c9;
+    }
+
+    .badge[data-category="web"] {
+      background: #e6f6f4;
+      color: #0f766e;
+      border-color: #b8e5df;
+    }
+
+    .badge[data-category="rev"] {
+      background: #fff1e3;
+      color: #a8540a;
+      border-color: #f7d6b3;
+    }
+
+    .badge[data-category="pwn"] {
+      background: #ffe9f2;
+      color: #a3145c;
+      border-color: #f8c2d8;
+    }
+
+    .badge[data-category="forensics"] {
+      background: #e9f1ff;
+      color: #1b4fa8;
+      border-color: #c5d9f8;
+    }
+
+    .badge[data-category="stego"] {
+      background: #f0eaff;
+      color: #5b34b0;
+      border-color: #d9ccfa;
+    }
+
+    .badge[data-category="osint"] {
+      background: #e8f7e8;
+      color: #256b28;
+      border-color: #c2e6c3;
+    }
+
+    .badge[data-category="misc"] {
+      background: #eef1f5;
+      color: #4a5563;
+      border-color: #d8dde3;
+    }
+
+    .badge[data-category="blockchain"] {
+      background: #fff7db;
+      color: #8a6400;
+      border-color: #f3e2a3;
+    }
+
+    .badge[data-category="game-hacking"] {
+      background: #eae4ff;
+      color: #4d32a8;
+      border-color: #d3c8fb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .badge[data-category="crypto"] {
+        background: #241a3d;
+        color: #c4a8ff;
+        border-color: #3b2b62;
+      }
+
+      .badge[data-category="exploit"] {
+        background: #3a1519;
+        color: #ff8f98;
+        border-color: #5c1f26;
+      }
+
+      .badge[data-category="web"] {
+        background: #10302e;
+        color: #7fd8cd;
+        border-color: #1b4d49;
+      }
+
+      .badge[data-category="rev"] {
+        background: #3a2411;
+        color: #f6bc7c;
+        border-color: #5a3a19;
+      }
+
+      .badge[data-category="pwn"] {
+        background: #3a1226;
+        color: #ff96c0;
+        border-color: #5c1d3d;
+      }
+
+      .badge[data-category="forensics"] {
+        background: #11213d;
+        color: #94b8f5;
+        border-color: #1d3460;
+      }
+
+      .badge[data-category="stego"] {
+        background: #241a3d;
+        color: #bfa6ff;
+        border-color: #3a2a61;
+      }
+
+      .badge[data-category="osint"] {
+        background: #12311a;
+        color: #8ee096;
+        border-color: #1e4f2a;
+      }
+
+      .badge[data-category="misc"] {
+        background: #222733;
+        color: #9aa4b2;
+        border-color: #2f3542;
+      }
+
+      .badge[data-category="blockchain"] {
+        background: #322711;
+        color: #f3c969;
+        border-color: #55430f;
+      }
+
+      .badge[data-category="game-hacking"] {
+        background: #221b3d;
+        color: #b9a6ff;
+        border-color: #372c60;
+      }
+    }
+
+    .difficulty {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: .75rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .difficulty[data-level="trivial"] {
+      background: #e7f6ec;
+      color: #1a7f37;
+      border-color: #b7e4c7;
+    }
+
+    .difficulty[data-level="easy"] {
+      background: #e8f3ff;
+      color: #1b6ec2;
+      border-color: #bfdcfb;
+    }
+
+    .difficulty[data-level="moderate"] {
+      background: #fff6e0;
+      color: #9a6700;
+      border-color: #f2dfae;
+    }
+
+    .difficulty[data-level="hard"] {
+      background: #ffece5;
+      color: #c2410c;
+      border-color: #f9c9b4;
+    }
+
+    .difficulty[data-level="brutal"] {
+      background: #ffe8ea;
+      color: #b42318;
+      border-color: #f8c4c9;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .difficulty[data-level="trivial"] {
+        background: #10331c;
+        color: #7ee2a8;
+        border-color: #1d5433;
+      }
+
+      .difficulty[data-level="easy"] {
+        background: #10253d;
+        color: #8ab4f8;
+        border-color: #1d3d63;
+      }
+
+      .difficulty[data-level="moderate"] {
+        background: #322711;
+        color: #f3c969;
+        border-color: #55430f;
+      }
+
+      .difficulty[data-level="hard"] {
+        background: #3a1d12;
+        color: #ffa981;
+        border-color: #5b2b18;
+      }
+
+      .difficulty[data-level="brutal"] {
+        background: #3a1519;
+        color: #ff8f98;
+        border-color: #5c1f26;
+      }
     }
 
     .meta {
@@ -217,7 +425,7 @@
 <body>
   <header>
     <h1>CTF Challenge Search</h1>
-    <p class="subtitle">Local index of this repository. Filter by category, tag, or free text.</p>
+    <p class="subtitle">Local index of this repository. Filter by category, tag, difficulty, or free text.</p>
   </header>
 
   <main>
@@ -225,6 +433,9 @@
       <input id="q" type="search" placeholder="Search title, tag, path, summary..." autocomplete="off">
       <select id="category" aria-label="Category">
         <option value="">All categories</option>
+      </select>
+      <select id="difficulty" aria-label="Difficulty">
+        <option value="">All difficulties</option>
       </select>
       <select id="mode" aria-label="Tag matching">
         <option value="all">Match all tags</option>
