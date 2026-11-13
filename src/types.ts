@@ -8,6 +8,7 @@ export interface ChallengeMeta {
   date?: string;
   path?: string;
   writeup?: string;
+  difficulty?: string;
 }
 
 export interface FolderMeta {
@@ -29,11 +30,13 @@ export interface Challenge {
   writeup?: string;
   pathUrl?: string;
   writeupUrl?: string;
+  difficulty?: string;
 }
 
 export interface Facets {
   categories: string[];
   tags: string[];
+  difficulties: string[];
 }
 
 export interface IndexPayload {

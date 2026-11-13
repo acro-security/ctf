@@ -27,6 +27,19 @@ function toPosix(value: string): string {
   return value.replaceAll("\\", "/");
 }
 
+const DIFFICULTY_ORDER = ["trivial", "easy", "moderate", "hard", "brutal"];
+
+function sortDifficulties(values: Iterable<string>): string[] {
+  return [...new Set(values)].sort((a, b) => {
+    const ai = DIFFICULTY_ORDER.indexOf(a);
+    const bi = DIFFICULTY_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 function isInside(root: string, target: string): boolean {
   const relative = path.relative(root, target);
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
@@ -99,6 +112,9 @@ export async function loadChallenges(repoRoot: string): Promise<LoadedIndex> {
       const summary = asString(entry.summary);
       if (summary) challenge.summary = summary;
 
+      const difficulty = asString(entry.difficulty);
+      if (difficulty) challenge.difficulty = difficulty;
+
       for (const key of ["path", "writeup"] as const) {
         const value = asString(entry[key]);
         if (!value) continue;
@@ -138,6 +154,11 @@ export async function loadChallenges(repoRoot: string): Promise<LoadedIndex> {
   const facets: Facets = {
     categories: [...new Set(challenges.map((challenge) => challenge.category))].sort(),
     tags: [...new Set(challenges.flatMap((challenge) => challenge.tags))].sort(),
+    difficulties: sortDifficulties(
+      challenges
+        .map((challenge) => challenge.difficulty)
+        .filter((value): value is string => Boolean(value)),
+    ),
   };
 
   return { challenges, facets, allowedFiles };
